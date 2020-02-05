@@ -1,25 +1,29 @@
 import {EventEmitter} from 'events';
 
 class Sound extends EventEmitter {
-    get paused() {
-        return this.ctx?.paused;
-    }
-
-    constructor(src, {volume = 1, loop = false, autoDestroy = true, autoplay}) {
+    constructor(src, {volume = 1, loop = false, autoDestroy = true, autoplay = false, canplay = ()=> {}}) {
         super();
 
         this.ctx = wx.createInnerAudioContext();
-        this.ctx.src = src;
         this.ctx.loop = loop;
         this.ctx.volume = volume;
-        this.ctx.autoplay = autoplay;
-
+        this.ctx.autoplay = true;
+        
+        this.ctx.onCanplay(()=> {
+            this.ctx.offCanplay();
+            if (!autoplay) {
+                this.stop();
+            }
+            canplay();
+        });
         !loop && autoDestroy && this.ctx.onEnded(() => this.destroy());
         this.ctx.onError(() => this.destroy());
+
+        this.ctx.src = src;
     }
 
     play() {
-        this.ctx?.play();
+        !wx.$store.muted && this.ctx?.play();
     }
 
     stop() {
@@ -40,6 +44,9 @@ class Sound extends EventEmitter {
 }
 
 wx.$sound = {
+    mute: (muted)=> {
+
+    },
     load: (src, opt = {autoplay: false})=> {
         return new Sound(src, opt);
     },

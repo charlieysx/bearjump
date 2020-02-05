@@ -1,7 +1,8 @@
 wx.cloud.init({env: PIXI.settings.CLOUD_ENV});
 
-function getWXContext() {
-    return wx.cloud.callFunction({ name: 'getWXContext' });
+async function getWXContext() {
+    const data = await wx.cloud.callFunction({ name: 'getWXContext' });
+    return data.result;
 }
 
 wx.$cloud = {

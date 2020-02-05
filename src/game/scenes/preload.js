@@ -52,6 +52,8 @@ export default {
         })()]);
         this.container.removeChild(text);
         wx.$store.userInfo = await this.getUserInfo();
+        wx.$store.userInfo.openId = wx.$store.openId;
+        wx.$open.postMessage('setSelfInfo', JSON.stringify(wx.$store.userInfo));
         this.hide();
         monitor.emit('scene:go', 'home');
     },

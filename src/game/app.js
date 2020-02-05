@@ -3,6 +3,7 @@ import './utils/pixiUtil';
 import './modules/store';
 import './modules/cloud';
 import './modules/sound';
+import './modules/open';
 import { stage, ticker, monitor, screen } from './core';
 import { preload, home, game, test } from './scenes';
 
@@ -14,18 +15,21 @@ const setShare = ()=> {
         title: '努力跳得更高...',
         query: `id=${wx.$store.openId}`,
         imageUrl: [
-            'http://blogimg.codebear.cn/share.png'
+            'http://bearfile.codebear.cn/jump/wxshare.png'
         ][~~(Math.random() * 1)]
     }));
     
     monitor.on('wx:share', opt => {
-        wx.shareAppMessage(opt || {
+        if (opt.query) {
+            opt.query += `&id=${wx.$store.openId}`;
+        }
+        wx.shareAppMessage(Object.assign({
             title: '努力跳得更高...',
             query: `id=${wx.$store.openId}`,
             imageUrl: [
-                'http://blogimg.codebear.cn/share.png'
+                'http://bearfile.codebear.cn/jump/wxshare.png'
             ][~~(Math.random() * 1)]
-        });
+        }, opt));
     });
 };
 
@@ -35,7 +39,7 @@ const initRouter = ()=> {
         .on('wx:show', async ({query: {scene}}) => {
             !pointer && monitor.emit('scene:go', 'preload');
         })
-        .on('scene:go', (name, opt) => {
+        .on('scene:go', (name, opt = {}) => {
             switch (name) {
             case 'preload': {
                 pointer = preload;
@@ -58,9 +62,13 @@ const initRouter = ()=> {
 
 
 const playBgm = ()=> {
-    wx.$sound.fail = wx.$sound.load(
-        'static/sounds/fail.mp3',
-        { volume: .5, autoDestroy: false }
+    wx.$sound.coutdown = wx.$sound.load(
+        'static/sounds/coutdown.mp3',
+        { volume: 1, autoDestroy: false }
+    );
+    wx.$sound.coutdown_end = wx.$sound.load(
+        'static/sounds/coutdown_end.mp3',
+        { volume: 1, autoDestroy: false }
     );
     wx.$sound.tap = wx.$sound.load(
         'static/sounds/jump.mp3',
@@ -68,16 +76,37 @@ const playBgm = ()=> {
     );
     wx.$sound.score = wx.$sound.load(
         'static/sounds/score.mp3',
-        { volume: .5, autoDestroy: false }
+        { volume: 1, autoDestroy: false }
     );
+    wx.$sound.shielding = wx.$sound.load(
+        'static/sounds/shielding.mp3',
+        { volume: 1, autoDestroy: false }
+    );
+    wx.$sound.fail = wx.$sound.load(
+        'static/sounds/fail.mp3',
+        { volume: 1, autoDestroy: false }
+    );
+
     const bgm = wx.$sound.load(
-        'http://bearfile.codebear.cn/jump/bgm.mp3',
-        { volume: .5, loop: true }
+        'http://bearfile.codebear.cn/jump/bgm2.mp3',
+        {
+            volume: .5,
+            loop: true,
+            canplay: async ()=> {
+                await wx.$util.delay(100);
+                !wx.$store.muted && bgm.play();
+            }
+        }
     );
     
-    bgm.play();
     monitor.on('wx:show', async () => {
-        !wx.$store.mute && bgm.play();
+        !wx.$store.muted && bgm.play();
+    }).on('sound:muted', async () => {
+        if (wx.$store.muted) {
+            bgm.stop();
+        } else {
+            bgm.play();
+        }
     });
     wx.onAudioInterruptionEnd(()=> {
         !wx.$store.mute && bgm.play();
