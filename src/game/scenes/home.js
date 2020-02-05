@@ -26,7 +26,7 @@ export default {
         logo.anchor.set(0.5, 0.5);
         this.container.addChild(logo);
         
-        const start = pixiUitl.genSprite('start');
+        const start = pixiUitl.genSprite('btn_start');
         start.x = screen.width / 2;
         start.y = screen.height / 2 + 300;
         start.anchor.set(0.5, 0.5);
@@ -37,12 +37,41 @@ export default {
             this.hide();
             monitor.emit('scene:go', 'game');
         });
+        
+        const guide = pixiUitl.genSprite('btn_guide');
+        guide.x = screen.width / 2;
+        guide.y = start.y + start.height + 50;
+        guide.anchor.set(0.5, 0.5);
+        this.container.addChild(guide);
+
+        guide.interactive = true;
+        guide.once('tap', (e)=> {
+            this.hide();
+            monitor.emit('scene:go', 'game', {
+                guide: true
+            });
+        });
+        
+        const toolInfo = pixiUitl.genSprite('btn_tool_info');
+        toolInfo.x = screen.width / 2;
+        toolInfo.y = guide.y + guide.height + 50;
+        toolInfo.anchor.set(0.5, 0.5);
+        this.container.addChild(toolInfo);
+
+        toolInfo.interactive = true;
+        toolInfo.on('tap', (e)=> {
+            wx.showModal({
+                title: '提示',
+                content: '敬请期待...',
+                showCancel: false
+            });
+        });
 
         const musicIcon = pixiUitl.genSprite(wx.$store.muted ? 'btn_music_close' : 'btn_music');
         musicIcon.anchor.set(0.5, 0.5);
         musicIcon.scale.x = musicIcon.scale.y = 0.7;
         musicIcon.x = screen.width / 2;
-        musicIcon.y = start.y + 200;
+        musicIcon.y = start.y - 150;
         this.container.addChild(musicIcon);
         musicIcon.interactive = true;
         musicIcon.on('tap', (e)=> {
@@ -58,6 +87,5 @@ export default {
         if(!this.showRanking) {
             return;
         }
-
     }
 };

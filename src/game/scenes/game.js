@@ -16,7 +16,7 @@ const TOOL_TYPE = {
     },
     SHIELDING: { // 保护罩
         id: 1,
-        bg: 'bear_shielding',
+        bg: 'shielding',
         time: 5000
     }
 };
@@ -431,7 +431,8 @@ const blockPool = new Pool();
 let tplBlock = null;
 
 export default {
-    show() {
+    show(opt) {
+        this.guiding = opt && opt.guide;
         this.init();
         monitor.emit('scene:show', 'home');
     },
@@ -452,6 +453,8 @@ export default {
         this.container.destroy();
     },
     init() {
+        this.guideStep = 0;
+        this.guideCache = {};
         this.starting = false;
         this.startShowEnd = false;
         this.showEnding = false;
@@ -501,8 +504,136 @@ export default {
         this.scoreText.anchor.set(0.5, 0.5);
         this.container.addChild(this.scoreText);
 
-        this.listenTouch();
-        this.showCoutDown();
+        !this.guiding && this.listenTouch();
+        !this.guiding && this.showCoutDown();
+    },
+    showGuide(step) {
+        // 显示跳跃引导
+        if (step === 0) {
+            let mask = pixiUitl.genMask();
+            mask.zIndex = 3;
+            mask.width = screen.width / 2;
+            this.container.addChild(mask);
+            let tip = pixiUitl.genSprite('tip_jump');
+            tip.zIndex = 3;
+            tip.anchor.set(0.5, 0.5);
+            tip.x = screen.width / 2;
+            tip.y = screen.height / 2;
+            this.container.addChild(tip);
+
+            let nextBtn = pixiUitl.genSprite('tip_next');
+            nextBtn.zIndex = 3;
+            nextBtn.anchor.set(0.5, 0.5);
+            nextBtn.x = screen.width / 2 + 200;
+            nextBtn.y = tip.y + tip.height / 2 + 200;
+            this.container.addChild(nextBtn);
+
+            nextBtn.interactive = true;
+            nextBtn.once('tap', ()=> {
+                this.container.removeChild(nextBtn);
+                this.container.removeChild(tip);
+                this.container.removeChild(mask);
+                this.showGuide(1);
+            });
+        }
+        // 障碍物提示
+        if (step === 1) {
+            this.guideCache.barrier.container.zIndex = 3;
+            let tip = pixiUitl.genSprite('tip_barrier');
+            tip.zIndex = 3;
+            tip.anchor.set(0.5, 0.5);
+            tip.x = screen.width / 2;
+            tip.y = screen.height / 2;
+            this.container.addChild(tip);
+
+            let nextBtn = pixiUitl.genSprite('tip_next');
+            nextBtn.zIndex = 3;
+            nextBtn.anchor.set(0.5, 0.5);
+            nextBtn.x = screen.width / 2 + 200;
+            nextBtn.y = tip.y + tip.height / 2 + 200;
+            this.container.addChild(nextBtn);
+
+            nextBtn.interactive = true;
+            nextBtn.once('tap', ()=> {
+                this.guideCache.barrier.container.zIndex = 1;
+                this.container.removeChild(nextBtn);
+                this.container.removeChild(tip);
+                this.showGuide(2);
+            });
+        }
+        // 星星提示
+        if (step === 2) {
+            this.guideCache.star.container.zIndex = 3;
+            let tip = pixiUitl.genSprite('tip_star');
+            tip.zIndex = 3;
+            tip.anchor.set(0.5, 0.5);
+            tip.x = screen.width / 2;
+            tip.y = screen.height / 2;
+            this.container.addChild(tip);
+
+            let nextBtn = pixiUitl.genSprite('tip_next');
+            nextBtn.zIndex = 3;
+            nextBtn.anchor.set(0.5, 0.5);
+            nextBtn.x = screen.width / 2 + 200;
+            nextBtn.y = tip.y + tip.height / 2 + 200;
+            this.container.addChild(nextBtn);
+
+            nextBtn.interactive = true;
+            nextBtn.once('tap', ()=> {
+                this.guideCache.star.container.zIndex = 1;
+                this.container.removeChild(nextBtn);
+                this.container.removeChild(tip);
+                this.showGuide(3);
+            });
+        }
+        // 假方块提示
+        if (step === 3) {
+            this.guideCache.fake.container.zIndex = 3;
+            let tip = pixiUitl.genSprite('tip_fake');
+            tip.zIndex = 3;
+            tip.anchor.set(0.5, 0.5);
+            tip.x = screen.width / 2 + 100;
+            tip.y = screen.height / 2;
+            this.container.addChild(tip);
+
+            let nextBtn = pixiUitl.genSprite('tip_next');
+            nextBtn.zIndex = 3;
+            nextBtn.anchor.set(0.5, 0.5);
+            nextBtn.x = screen.width / 2 + 200;
+            nextBtn.y = tip.y + tip.height / 2 + 200;
+            this.container.addChild(nextBtn);
+
+            nextBtn.interactive = true;
+            nextBtn.once('tap', ()=> {
+                this.guideCache.fake.container.zIndex = 1;
+                this.container.removeChild(nextBtn);
+                this.container.removeChild(tip);
+                this.showGuide(4);
+            });
+        }
+        // 更多提示
+        if (step === 4) {
+            let tip = pixiUitl.genSprite('tip_more');
+            tip.zIndex = 3;
+            tip.anchor.set(0.5, 0.5);
+            tip.x = screen.width / 2;
+            tip.y = screen.height / 2;
+            this.container.addChild(tip);
+
+            let nextBtn = pixiUitl.genSprite('tip_sure');
+            nextBtn.zIndex = 3;
+            nextBtn.anchor.set(0.5, 0.5);
+            nextBtn.x = screen.width / 2 + 200;
+            nextBtn.y = tip.y + tip.height / 2 + 200;
+            this.container.addChild(nextBtn);
+
+            nextBtn.interactive = true;
+            nextBtn.once('tap', ()=> {
+                this.container.removeChild(nextBtn);
+                this.container.removeChild(tip);
+                monitor.emit('scene:go', 'home');
+            });
+        }
     },
     listenTouch() {
         this.container.on('pointerdown', (e)=> {
@@ -543,6 +674,25 @@ export default {
         this.bear.y = pos.y;
         this.bear.bearY = pos.y;
         this.container.addChild(this.bear.container);
+
+        if (this.guiding) {
+            let mask = pixiUitl.genMask();
+            mask.alpha = 0;
+            mask.zIndex = 2;
+            this.container.addChild(mask);
+            tween({
+                from: 0,
+                to: 0.7,
+                duration: 500
+            }).start({
+                update: v=> {
+                    mask.alpha = v;
+                },
+                complete: ()=> {
+                    this.showGuide(0);
+                }
+            });
+        }
     },
     async showCoutDown() {
         let mask = pixiUitl.genMask();
@@ -646,13 +796,35 @@ export default {
             if (type === BLOCK_TYPE.EMPTY && !allEmpty) {
                 type = Math.random() < (0.02 + this.lineNum * 0.003) ? BLOCK_TYPE.FAKE : BLOCK_TYPE.EMPTY;
             }
-            lastType = type;
-            block = blockPool.getBlock(type);
-            if (type === BLOCK_TYPE.BARRIER) {
-                block.setBarrier('barrier');
-            }
-            if (type === BLOCK_TYPE.TOOL) {
-                block.setToolType(Math.random() < 0.5 ? TOOL_TYPE.SCORE : TOOL_TYPE.SHIELDING);
+            if (this.guiding && i > 1) {
+                // 引导页，固定生成
+                if (!this.guideCache.barrier) {
+                    type = BLOCK_TYPE.BARRIER;
+                    block = blockPool.getBlock(type);
+                    block.setBarrier('barrier');
+                    this.guideCache.barrier = block;
+                } else if (!this.guideCache.star) {
+                    type = BLOCK_TYPE.TOOL;
+                    block = blockPool.getBlock(type);
+                    block.setToolType(TOOL_TYPE.SCORE);
+                    this.guideCache.star = block;
+                } else if (!this.guideCache.fake) {
+                    type = BLOCK_TYPE.FAKE;
+                    block = blockPool.getBlock(type);
+                    this.guideCache.fake = block;
+                } else {
+                    type = BLOCK_TYPE.EMPTY;
+                    block = blockPool.getBlock(type);
+                }
+            } else {
+                lastType = type;
+                block = blockPool.getBlock(type);
+                if (type === BLOCK_TYPE.BARRIER) {
+                    block.setBarrier('barrier');
+                }
+                if (type === BLOCK_TYPE.TOOL) {
+                    block.setToolType(Math.random() < 0.5 ? TOOL_TYPE.SCORE : TOOL_TYPE.SHIELDING);
+                }
             }
             block.width = screen.width / 5;
             block.alpha = 0;
