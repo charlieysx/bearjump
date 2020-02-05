@@ -7,7 +7,40 @@ import './modules/open';
 import { stage, ticker, monitor, screen } from './core';
 import { preload, home, game, test } from './scenes';
 
-wx.onShow(info => monitor.emit('wx:show', info));
+
+let pointer = null;
+
+const initRouter = ()=> {
+    if(pointer) {
+        return;
+    }
+    monitor
+        .on('scene:go', (name, opt = {}) => {
+            switch (name) {
+            case 'preload': {
+                pointer = preload;
+                preload.show(opt);
+                break;
+            }
+            case 'home': {
+                pointer = home;
+                home.show(opt);
+                break;
+            }
+            case 'game': {
+                pointer = game;
+                game.show(opt);
+                break;
+            }
+            }
+        });
+    monitor.emit('scene:go', 'preload');
+};
+
+wx.onShow(info => {
+    monitor.emit('wx:show', info);
+    initRouter();
+});
 
 const setShare = ()=> {
     wx.showShareMenu({withShareTicket: true});
@@ -33,35 +66,7 @@ const setShare = ()=> {
     });
 };
 
-const initRouter = ()=> {
-    let pointer = null;
-    monitor
-        .on('wx:show', async ({query: {scene}}) => {
-            !pointer && monitor.emit('scene:go', 'preload');
-        })
-        .on('scene:go', (name, opt = {}) => {
-            switch (name) {
-            case 'preload': {
-                pointer = preload;
-                preload.show(opt);
-                break;
-            }
-            case 'home': {
-                pointer = home;
-                home.show(opt);
-                break;
-            }
-            case 'game': {
-                pointer = game;
-                game.show(opt);
-                break;
-            }
-            }
-        });
-};
-
-
-const playBgm = ()=> {
+const playBgm = async ()=> {
     wx.$sound.coutdown = wx.$sound.load(
         'static/sounds/coutdown.mp3',
         { volume: 1, autoDestroy: false }
@@ -116,22 +121,22 @@ const playBgm = ()=> {
 /**
  * 游戏圈
  */
-const createGameCenterButton = ()=> {
-    // const button = wx.createGameClubButton({
-    //     icon: 'white',
-    //     style: {
-    //         left: 10,
-    //         top: screen.height * .2,
-    //         width: 40,
-    //         height: 40
-    //     }
-    // });
+const createGameCenterButton = async ()=> {
+    const button = wx.createGameClubButton({
+        icon: 'white',
+        style: {
+            left: 10,
+            top: screen.height * 0.2,
+            width: 40,
+            height: 40
+        }
+    });
     
-    // button.hide();
+    button.hide();
     
-    // monitor
-    //     .on('scene:show', name => name === 'home' ? button.show() : button.hide())
-    //     .on('scene:hide', name => name === 'home' && button.hide());
+    monitor
+        .on('scene:show', name => name === 'home' ? button.show() : button.hide())
+        .on('scene:hide', name => name === 'home' && button.hide());
 };
 
 /**
@@ -146,6 +151,5 @@ const checkUpdate = ()=> {
 
 checkUpdate();
 setShare();
-initRouter();
 playBgm();
 createGameCenterButton();

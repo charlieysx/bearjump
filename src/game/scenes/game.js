@@ -434,11 +434,11 @@ export default {
     show(opt) {
         this.guiding = opt && opt.guide;
         this.init();
-        monitor.emit('scene:show', 'home');
+        monitor.emit('scene:show', 'game');
     },
     hide() {
         this.removeAll();
-        monitor.emit('scene:hide', 'home');
+        monitor.emit('scene:hide', 'game');
     },
     removeAll() {
         this.showEnding = false;

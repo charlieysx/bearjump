@@ -15,6 +15,8 @@ export default {
         this.container = new PIXI.Container();
         this.container.interactive = true;
 
+        stage.addChild(this.container);
+
         const bg = pixiUitl.genSprite('bg');
         bg.width = screen.width;
         bg.height = screen.height;
@@ -25,7 +27,7 @@ export default {
         logo.y = screen.height / 2 - 150;
         logo.anchor.set(0.5, 0.5);
         this.container.addChild(logo);
-        
+
         const start = pixiUitl.genSprite('btn_start');
         start.x = screen.width / 2;
         start.y = screen.height / 2 + 300;
@@ -80,8 +82,6 @@ export default {
             musicIcon.texture = pixiUitl.getTexture(wx.$store.muted ? 'btn_music_close' : 'btn_music');
             monitor.emit('sound:muted');
         });
-
-        stage.addChild(this.container);
     },
     update() {
         if(!this.showRanking) {

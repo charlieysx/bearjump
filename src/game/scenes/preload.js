@@ -5,11 +5,11 @@ export default {
         wx.$store.font = wx.loadFont('static/fonts/zkklt.ttf') || 'sans-serif';
         this.init();
         stage.addChild(this.container);
-        monitor.emit('scene:show', 'home');
+        monitor.emit('scene:show', 'preload');
     },
     hide() {
         this.container.destroy({children: true});
-        monitor.emit('scene:hide', 'home');
+        monitor.emit('scene:hide', 'preload');
     },
     load() {
         return new Promise((resolve, reject)=> {
@@ -44,18 +44,37 @@ export default {
         this.container.addChild(text);
 
         Object.entries(pixiUitl.imgList).forEach(([k, v])=> loader.add(k, v));
+        wx.showLoading();
         await Promise.all([this.load(), (async ()=> {
-            wx.showLoading();
             const {OPENID} = await wx.$cloud.getWXContext();
             wx.$store.openId = OPENID;
-            wx.hideLoading();
         })()]);
         this.container.removeChild(text);
-        wx.$store.userInfo = await this.getUserInfo();
-        wx.$store.userInfo.openId = wx.$store.openId;
-        wx.$open.postMessage('setSelfInfo', JSON.stringify(wx.$store.userInfo));
-        this.hide();
-        monitor.emit('scene:go', 'home');
+        const info = await this.getUserInfo();
+        wx.hideLoading();
+        if (!info) {
+            let button = wx.createUserInfoButton({
+                type: 'image',
+                image: 'static/textures/open.png',
+                style: {
+                    left: (screen.width - 96) / 4,
+                    top: (screen.height - 52) / 4,
+                    width: 96 / 2,
+                    height: 52 / 2,
+                },
+                lang: 'zh_CN'
+            });
+            button.onTap(({userInfo}) => {
+                if (userInfo) {
+                    button.destroy();
+                    wx.$store.userInfo = userInfo;
+                    this.next();
+                }
+            });
+        } else {
+            wx.$store.userInfo = info;
+            this.next();
+        }
     },
     async getUserInfo() {
         return new Promise(resolve=> {
@@ -68,26 +87,16 @@ export default {
                             }
                         });
                     } else {
-                        let button = wx.createUserInfoButton({
-                            type: 'image',
-                            image: 'static/textures/open.png',
-                            style: {
-                                left: (screen.width - 96) / 4,
-                                top: (screen.height - 52) / 4,
-                                width: 96 / 2,
-                                height: 52 / 2,
-                            },
-                            lang: 'zh_CN'
-                        });
-                        button.onTap(({userInfo}) => {
-                            if (userInfo) {
-                                button.destroy();
-                                resolve(userInfo);
-                            }
-                        });
+                        resolve(null);
                     }
                 }
             });
         });
+    },
+    next() {
+        wx.$store.userInfo.openId = wx.$store.openId;
+        wx.$open.postMessage('setSelfInfo', JSON.stringify(wx.$store.userInfo));
+        this.hide();
+        monitor.emit('scene:go', 'home');
     }
 };
