@@ -39,6 +39,7 @@ const initRouter = ()=> {
 
 wx.onShow(info => {
     monitor.emit('wx:show', info);
+    wx.$store.ready && monitor.emit('wx:onAudioInterruptionEnd');
     initRouter();
 });
 

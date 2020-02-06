@@ -61,7 +61,9 @@ class AudioManager {
                 return;
             }
             this.playingBgm.key = key;
-            this.playingBgm.ctx.play();
+            setTimeout(()=> {
+                this.playingBgm.ctx.play();
+            }, 100);
         }
     }
 
@@ -122,14 +124,18 @@ class AudioManager {
         audio.ctx.offStop();
         audio.ctx.offEnded();
         audio.ctx.onStop(()=> {
+            audio.ctx.offStop();
             this.playingList.delete(key);
         });
         audio.ctx.onEnded(()=> {
+            audio.ctx.offEnded();
             audio.ctx.destroy();
             this.playingList.delete(key);
         });
         this.playingList.set(key, audio);
-        audio.ctx.play();
+        setTimeout(()=> {
+            audio.ctx.play();
+        }, 100);
     }
 
     volume(num) {
