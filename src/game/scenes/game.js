@@ -1129,16 +1129,13 @@ export default {
                 title: `我的小熊跳了${this.finishScore}分，你能超越我吗~`
             });
         });
-
-        await wx.$util.delay(10000);
-        this.showEnding = false;
     },
     update() {
         if (this.showEnding) {
             // 显示结束分数
             canvas = wx.$open.getCanvas();
-            let texture = new PIXI.BaseTexture(canvas);
-            this.endSprite.texture = new PIXI.Texture(texture);
+            this.endSprite.texture = PIXI.Texture.from(canvas);
+            this.endSprite.texture.update();
         }
     }
 };

@@ -4,7 +4,7 @@ let reject = null;
 
 function create() {
     ad = wx.createRewardedVideoAd({
-        adUnitId: 'adunit-035f929608f8c858'
+        adUnitId: ''
     });
 
     ad.onError(err => {

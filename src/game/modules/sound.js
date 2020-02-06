@@ -21,10 +21,7 @@ class AudioManager {
             const ctx = wx.createInnerAudioContext();
             ctx.onCanplay(()=> {
                 ctx.offCanplay();
-                this.audioList.set(key, {
-                    src,
-                    ctx
-                });
+                this.audioList.set(key, src);
                 resolve();
             });
             ctx.src = src;
@@ -34,36 +31,36 @@ class AudioManager {
     async loadBgm(key, src) {
         return new Promise((resolve)=> {
             const ctx = wx.createInnerAudioContext();
-            ctx.loop = true;
             ctx.onCanplay(()=> {
                 ctx.offCanplay();
-                this.bgmList.set(key, {
-                    src,
-                    ctx
-                });
+                this.bgmList.set(key, src);
                 resolve();
             });
             ctx.src = src;
         });
     }
 
-    playBgm(key) {
+    playBgm(key, force = false) {
         key = key || this.playingBgm.key || this.playingBgm.lastKey;
-        const bgm = this.bgmList.get(key);
-        if (bgm) {
-            if (this.playingBgm.key === key) {
+        const bgmSrc = this.bgmList.get(key);
+        if (bgmSrc) {
+            if (!force && this.playingBgm.key === key) {
                 return;
             }
             if (this.playingBgm.ctx !== null) {
                 this.playingBgm.ctx.stop();
-                this.playingBgm.ctx = null;
+            } else {
+                this.playingBgm.ctx = wx.createInnerAudioContext();
+                this.playingBgm.ctx.loop = true;
+                this.playingBgm.ctx.src = bgmSrc;
             }
             this.playingBgm.lastKey = this.playingBgm.key || key;
             if (this.muted.bgm) {
+                this.playingBgm.ctx.destroy();
+                this.playingBgm.ctx = null;
                 return;
             }
             this.playingBgm.key = key;
-            this.playingBgm.ctx = bgm.ctx;
             this.playingBgm.ctx.play();
         }
     }
@@ -81,7 +78,7 @@ class AudioManager {
             if (this.playingBgm.ctx !== null) {
                 this.playingBgm.lastKey = this.playingBgm.key;
                 this.playingBgm.key = '';
-                this.playingBgm.ctx.stop();
+                this.playingBgm.ctx.destroy();
                 this.playingBgm.ctx = null;
             }
         } else {
@@ -104,13 +101,22 @@ class AudioManager {
             audio.ctx.stop();
         }
         if (!audio) {
-            audio = this.audioList.get(key);
+            const src = this.audioList.get(key);
+            if (!src) {
+                console.log('不存在音效', key);
+                return;
+            }
+            audio = {};
+            audio.ctx = wx.createInnerAudioContext();
+            audio.ctx.src = src;
         }
         if (!audio) {
             console.log('不存在音效', key);
             return;
         }
         if (this.muted.sound) {
+            audio.ctx.destroy();
+            this.playingList.delete(key);
             return;
         }
         audio.ctx.offStop();
@@ -119,6 +125,7 @@ class AudioManager {
             this.playingList.delete(key);
         });
         audio.ctx.onEnded(()=> {
+            audio.ctx.destroy();
             this.playingList.delete(key);
         });
         this.playingList.set(key, audio);
@@ -137,6 +144,8 @@ class AudioManager {
         if (muted) {
             for (let [key, value] of this.playingList) {
                 value.ctx.stop();
+                value.ctx.destroy();
+                value.ctx = null;
             }
         }
     }

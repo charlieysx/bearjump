@@ -4,6 +4,10 @@ const sharedCtx = sharedCanvas.getContext('2d');
 const cacheCanvas = wx.createCanvas();
 const cacheCtx = cacheCanvas.getContext('2d');
 
+function getCurrTime() {
+    return parseInt(+new Date() / 1000);
+}
+
 const {
     devicePixelRatio,
     windowWidth: width,
@@ -26,9 +30,6 @@ function handle({type, data}) {
     case 'showFriendRank':
         showFriendRank();
         break;
-    case 'updateMaxScore':
-        updateMaxScore();
-        break;
     case 'showEndScore':
         showEndScore(data);
         break;
@@ -48,8 +49,8 @@ function showFriendRank() {
     });
 }
 
-const endWidth = 500 * 2;
-const endHeight = 540 * 2;
+const endWidth = 500 * pixelRatio;
+const endHeight = 540 * pixelRatio;
 
 function drawToShared() {
     sharedCtx.drawImage(cacheCanvas, 0, 0, sharedCanvas.width, sharedCanvas.height);
@@ -90,7 +91,10 @@ function showEndScore(score) {
         wx.getFriendCloudStorage({
             keyList: ['score'],
             success: ({data})=> {
-                const sortList = sort({list: data});
+                const sortList = sort({list: data.map(item=> {
+                    item.score = getWxgame(item.KVDataList[0]?.value);
+                    return item;
+                }).filter(item=> item.score !== -1)});
                 const list = [];
                 const index = sortList.findIndex(item=> item.openid === selfInfo.openId);
                 let start = index;
@@ -112,7 +116,6 @@ function showEndScore(score) {
                         list.push(newItem);
                     }
                 }
-
                 drawRank(list);
             }
         });
@@ -188,8 +191,9 @@ function showEndScore(score) {
             if (!data || !data.KVDataList) {
                 return;
             }
-            const hadScore = (+(data.KVDataList[0]?.value) || -1) > -1;
-            const lastScore = (+(data.KVDataList[0]?.value) || score);
+            const cloudScore =  getWxgame(data.KVDataList[0]?.value);
+            const hadScore = cloudScore > -1;
+            const lastScore = cloudScore || score;
 
             // 绘制历史最高得分
             cacheCtx.fillStyle = '#999999';
@@ -207,8 +211,22 @@ function showEndScore(score) {
                 cacheCtx.fillText('新纪录', endWidth - 100, 97 * 2 + 30);
                 
                 wx.setUserCloudStorage({
-                    KVDataList: [{ key: 'score', value: `${score}` }],
-                    success: getFriendCloudStorage
+                    KVDataList: [{
+                        key: 'score',
+                        value: JSON.stringify({
+                            wxgame: {
+                                score: `${score}`,
+                                update_time: getCurrTime(),
+                            }
+                        })
+                    }],
+                    success: (res=> {
+                        console.log('保存成功');
+                        getFriendCloudStorage();
+                    }),
+                    fail: (res)=> {
+                        console.err(res);
+                    }
                 });
             } else {
                 getFriendCloudStorage();
@@ -219,26 +237,17 @@ function showEndScore(score) {
     });
 }
 
-function sort({list, key = 'KVDataList', subKey = 'score', desc = -1}) {
-    return list.map(item=> {
-        item[subKey] = +item[key][0]['value'];
-        return item;
-    }).sort((a, b)=> {
-        return (a[subKey] - b[subKey]) * desc;
-    });
+function getWxgame(source) {
+    try {
+        source = JSON.parse(source);
+        return +(source?.wxgame?.score) || +source || -1;
+    } catch (e) {
+        return -1;
+    }
 }
 
-function updateMaxScore() {
-    wx.getUserCloudStorage({
-        keyList: ['score'],
-        success: (res)=> {
-            console.log(res);
-            let itemCanvas = wx.getSharedCanvas();
-            let ctx = itemCanvas.getContext('2d');
-            itemCanvas.width = 100;
-            itemCanvas.height = 100;
-            ctx.fillStyle = '#00ff00';
-            ctx.fillRect(0, 0, 100, 100);
-        }
+function sort({list, desc = -1}) {
+    return list.sort((a, b)=> {
+        return (a.score - b.score) * desc;
     });
 }

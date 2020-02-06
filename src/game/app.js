@@ -41,7 +41,13 @@ wx.onShow(info => {
     monitor.emit('wx:show', info);
     initRouter();
 });
+
+wx.onAudioInterruptionBegin(()=> {
+    console.log('onAudioInterruptionBegin');
+});
+
 wx.onAudioInterruptionEnd(()=> {
+    console.log('onAudioInterruptionEnd');
     monitor.emit('wx:onAudioInterruptionEnd');
 });
 
@@ -71,7 +77,8 @@ const setShare = ()=> {
 
 const listenAudio = ()=> {
     monitor.on('wx:onAudioInterruptionEnd', ()=> {
-        wx.$audio.playBgm();
+        // 这里填空的话，会自动获取最后一次播放的音乐
+        wx.$audio.playBgm('', true);
     }).on('muted:bgm', (muted)=> {
         wx.$audio.muteBgm(muted);
     }).on('muted:sound', (muted)=> {
