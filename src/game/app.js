@@ -41,6 +41,9 @@ wx.onShow(info => {
     monitor.emit('wx:show', info);
     initRouter();
 });
+wx.onAudioInterruptionEnd(()=> {
+    monitor.emit('wx:onAudioInterruptionEnd');
+});
 
 const setShare = ()=> {
     wx.showShareMenu({withShareTicket: true});
@@ -66,55 +69,13 @@ const setShare = ()=> {
     });
 };
 
-const playBgm = async ()=> {
-    wx.$sound.coutdown = wx.$sound.load(
-        'static/sounds/coutdown.mp3',
-        { volume: 1, autoDestroy: false }
-    );
-    wx.$sound.coutdown_end = wx.$sound.load(
-        'static/sounds/coutdown_end.mp3',
-        { volume: 1, autoDestroy: false }
-    );
-    wx.$sound.tap = wx.$sound.load(
-        'static/sounds/jump.mp3',
-        { volume: .5, autoDestroy: false }
-    );
-    wx.$sound.score = wx.$sound.load(
-        'static/sounds/score.mp3',
-        { volume: 1, autoDestroy: false }
-    );
-    wx.$sound.shielding = wx.$sound.load(
-        'static/sounds/shielding.mp3',
-        { volume: 1, autoDestroy: false }
-    );
-    wx.$sound.fail = wx.$sound.load(
-        'static/sounds/fail.mp3',
-        { volume: 1, autoDestroy: false }
-    );
-
-    const bgm = wx.$sound.load(
-        'http://bearfile.codebear.cn/jump/bgm2.mp3',
-        {
-            volume: .5,
-            loop: true,
-            canplay: async ()=> {
-                await wx.$util.delay(100);
-                !wx.$store.muted && bgm.play();
-            }
-        }
-    );
-    
-    monitor.on('wx:show', async () => {
-        !wx.$store.muted && bgm.play();
-    }).on('sound:muted', async () => {
-        if (wx.$store.muted) {
-            bgm.stop();
-        } else {
-            bgm.play();
-        }
-    });
-    wx.onAudioInterruptionEnd(()=> {
-        !wx.$store.mute && bgm.play();
+const listenAudio = ()=> {
+    monitor.on('wx:onAudioInterruptionEnd', ()=> {
+        wx.$audio.playBgm();
+    }).on('muted:bgm', (muted)=> {
+        wx.$audio.muteBgm(muted);
+    }).on('muted:sound', (muted)=> {
+        wx.$audio.mute(muted);
     });
 };
 
@@ -151,5 +112,6 @@ const checkUpdate = ()=> {
 
 checkUpdate();
 setShare();
-playBgm();
+listenAudio();
+// playBgm();
 createGameCenterButton();

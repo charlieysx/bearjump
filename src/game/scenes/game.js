@@ -704,8 +704,7 @@ export default {
         coutdownTip.x = screen.width / 2;
         coutdownTip.y = screen.height / 2;
         const startTween = ()=> {
-            wx.$sound.coutdown.stop();
-            wx.$sound.coutdown.play();
+            wx.$audio.play('coutdown', {force: true});
             return new Promise(resolve=> {
                 tween({
                     from: 1,
@@ -728,8 +727,7 @@ export default {
         coutdownTip.scale.x = coutdownTip.scale.y = 1;
         await startTween();
         this.container.removeChild(coutdownTip);
-        wx.$sound.coutdown_end.stop();
-        wx.$sound.coutdown_end.play();
+        wx.$audio.play('coutdown_end', {force: true});
         tween({
             from: 0.5,
             to: 0,
@@ -909,8 +907,7 @@ export default {
             return;
         }
         this.lockTouch = true;
-        wx.$sound.tap.stop();
-        wx.$sound.tap.play();
+        wx.$audio.play('tap', {force: true});
 
         let diff = dir;
         let firstLine = this.lineList.shift();
@@ -1014,14 +1011,12 @@ export default {
         block.use();
         switch(block.toolType.id) {
         case TOOL_TYPE.SCORE.id:
-            wx.$sound.score.stop();
-            wx.$sound.score.play();
+            wx.$audio.play('score', {force: true});
             this.finishScore += block.toolType.data;
             this.flyStar(block.x, block.y, block.toolType.data);
             break;
         case TOOL_TYPE.SHIELDING.id:
-            wx.$sound.shielding.stop();
-            wx.$sound.shielding.play();
+            wx.$audio.play('shielding', {force: true});
             this.bear.showShielding(block.toolType.time);
             break;
         }
@@ -1086,7 +1081,7 @@ export default {
             return;
         }
         this.startShowEnd = true;
-        wx.$sound.fail.play();
+        wx.$audio.play('fail', {force: true});
         wx.$open.showEnd(this.finishScore);
         let mask = pixiUitl.genMask();
         this.container.addChild(mask);

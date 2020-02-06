@@ -1,56 +1,145 @@
-import {EventEmitter} from 'events';
+class AudioManager {
+    constructor() {
+        this.audioList = new Map();
+        this.playingList = new Map();
 
-class Sound extends EventEmitter {
-    constructor(src, {volume = 1, loop = false, autoDestroy = true, autoplay = false, canplay = ()=> {}}) {
-        super();
+        this.bgmList = new Map();
+        this.playingBgm = {
+            lastKey: '',
+            key: '',
+            ctx: null
+        };
 
-        this.ctx = wx.createInnerAudioContext();
-        this.ctx.loop = loop;
-        this.ctx.volume = volume;
-        this.ctx.autoplay = true;
-        
-        this.ctx.onCanplay(()=> {
-            this.ctx.offCanplay();
-            if (!autoplay) {
-                this.stop();
-            }
-            canplay();
+        this.muted = {
+            bgm: localStorage.getItem('muted:bgm'),
+            sound: localStorage.getItem('muted:sound')
+        };
+    }
+
+    async load(key, src) {
+        return new Promise((resolve)=> {
+            const ctx = wx.createInnerAudioContext();
+            ctx.onCanplay(()=> {
+                ctx.offCanplay();
+                this.audioList.set(key, {
+                    src,
+                    ctx
+                });
+                resolve();
+            });
+            ctx.src = src;
         });
-        !loop && autoDestroy && this.ctx.onEnded(() => this.destroy());
-        this.ctx.onError(() => this.destroy());
-
-        this.ctx.src = src;
     }
 
-    play() {
-        !wx.$store.muted && this.ctx?.play();
+    async loadBgm(key, src) {
+        return new Promise((resolve)=> {
+            const ctx = wx.createInnerAudioContext();
+            ctx.loop = true;
+            ctx.onCanplay(()=> {
+                ctx.offCanplay();
+                this.bgmList.set(key, {
+                    src,
+                    ctx
+                });
+                resolve();
+            });
+            ctx.src = src;
+        });
     }
 
-    stop() {
-        this.ctx?.stop();
+    playBgm(key) {
+        key = key || this.playingBgm.key || this.playingBgm.lastKey;
+        const bgm = this.bgmList.get(key);
+        if (bgm) {
+            if (this.playingBgm.key === key) {
+                return;
+            }
+            if (this.playingBgm.ctx !== null) {
+                this.playingBgm.ctx.stop();
+                this.playingBgm.ctx = null;
+            }
+            this.playingBgm.lastKey = this.playingBgm.key || key;
+            if (this.muted.bgm) {
+                return;
+            }
+            this.playingBgm.key = key;
+            this.playingBgm.ctx = bgm.ctx;
+            this.playingBgm.ctx.play();
+        }
     }
 
-    pause() {
-        this.ctx?.pause();
+    volumeBgm(num) {
+        if (this.playingBgm.ctx !== null) {
+            this.playingBgm.ctx.volume = num;
+        }
     }
 
-    destroy() {
-        if (!this.ctx) {
+    muteBgm(muted) {
+        this.muted.bgm = muted;
+        localStorage.setItem('muted:bgm', muted);
+        if (muted) {
+            if (this.playingBgm.ctx !== null) {
+                this.playingBgm.lastKey = this.playingBgm.key;
+                this.playingBgm.key = '';
+                this.playingBgm.ctx.stop();
+                this.playingBgm.ctx = null;
+            }
+        } else {
+            if (this.playingBgm.lastKey) {
+                this.playBgm(this.playingBgm.lastKey);
+            } else {
+                console.log('还未播放过背景音乐');
+            }
+        }
+    }
+
+    play(key, {
+        force = false // 强制播放，会重新播放
+    } = {}) {
+        let audio = this.playingList.get(key);
+        if (audio) {
+            if (!force) {
+                return;
+            }
+            audio.ctx.stop();
+        }
+        if (!audio) {
+            audio = this.audioList.get(key);
+        }
+        if (!audio) {
+            console.log('不存在音效', key);
             return;
         }
-        this.ctx.destroy();
-        this.ctx = null;
+        if (this.muted.sound) {
+            return;
+        }
+        audio.ctx.offStop();
+        audio.ctx.offEnded();
+        audio.ctx.onStop(()=> {
+            this.playingList.delete(key);
+        });
+        audio.ctx.onEnded(()=> {
+            this.playingList.delete(key);
+        });
+        this.playingList.set(key, audio);
+        audio.ctx.play();
+    }
+
+    volume(num) {
+        if (this.playingBgm.ctx !== null) {
+            this.playingBgm.ctx.volume = num;
+        }
+    }
+
+    mute(muted) {
+        this.muted.sound = muted;
+        localStorage.setItem('muted:sound', muted);
+        if (muted) {
+            for (let [key, value] of this.playingList) {
+                value.ctx.stop();
+            }
+        }
     }
 }
 
-wx.$sound = {
-    mute: (muted)=> {
-
-    },
-    load: (src, opt = {autoplay: false})=> {
-        return new Sound(src, opt);
-    },
-    play: (src, opt = {autoplay: true})=> {
-        return new Sound(src, opt);
-    }
-};
+wx.$audio = new AudioManager();

@@ -69,7 +69,7 @@ export default {
             });
         });
 
-        const musicIcon = pixiUitl.genSprite(wx.$store.muted ? 'btn_music_close' : 'btn_music');
+        const musicIcon = pixiUitl.genSprite(wx.$audio.muted.bgm ? 'btn_music_close' : 'btn_music');
         musicIcon.anchor.set(0.5, 0.5);
         musicIcon.scale.x = musicIcon.scale.y = 0.7;
         musicIcon.x = screen.width / 2;
@@ -77,10 +77,8 @@ export default {
         this.container.addChild(musicIcon);
         musicIcon.interactive = true;
         musicIcon.on('tap', (e)=> {
-            wx.$store.muted = !wx.$store.muted;
-            localStorage.setItem('muted', wx.$store.muted);
-            musicIcon.texture = pixiUitl.getTexture(wx.$store.muted ? 'btn_music_close' : 'btn_music');
-            monitor.emit('sound:muted');
+            monitor.emit('muted:bgm', !wx.$audio.muted.bgm);
+            musicIcon.texture = pixiUitl.getTexture(wx.$audio.muted.bgm ? 'btn_music_close' : 'btn_music');
         });
     },
     update() {
