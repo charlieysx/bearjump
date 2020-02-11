@@ -37,7 +37,7 @@ wx.createRewardedVideoAd({
 
 ```bash
 # clone 项目
-git clone git@github.com:JetLua/colloc.git
+git clone https://github.com/CB-ysx/bearjump.git
 
 # 安装依赖
 npm i
