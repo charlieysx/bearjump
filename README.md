@@ -7,6 +7,9 @@
 colloc源码地址：https://github.com/JetLua/colloc
 感谢作者分享的pixi.js开发微信小游戏。
 
+### 小游戏码
+<img src="https://github.com/CB-ysx/bearjump/readmeimg/code.jpg" width="33%">
+
 ### 配置
 > 修改成开发者自己的云开发环境和广告位 ID
 
@@ -48,6 +51,6 @@ npm run dev
 
 ### 游戏截图
 
-<img src="https://github.com/CB-ysx/bearjump/readmeimg/1.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/2.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/3.png" width="33.33%">
+<img src="https://github.com/CB-ysx/bearjump/readmeimg/1.png" width="33.33%"> <img src="https://github.com/CB-ysx/bearjump/readmeimg/2.png" width="33.33%"> <img src="https://github.com/CB-ysx/bearjump/readmeimg/3.png" width="33.33%">
 
-<img src="https://github.com/CB-ysx/bearjump/readmeimg/4.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/5.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/6.png" width="33.33%">
+<img src="https://github.com/CB-ysx/bearjump/readmeimg/4.png" width="33.33%"> <img src="https://github.com/CB-ysx/bearjump/readmeimg/5.png" width="33.33%"> <img src="https://github.com/CB-ysx/bearjump/readmeimg/6.png" width="33.33%">
