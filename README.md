@@ -54,3 +54,5 @@ npm run dev
 <img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/1.png" width="33%"><img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/2.png" width="33%"><img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/3.png" width="33%">
 
 <img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/4.png" width="33%"><img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/5.png" width="33%"><img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/6.png" width="33%">
+
+<img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/7.png" width="33%"><img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/8.png" width="33%"><img src="https://github.com/CB-ysx/bearjump/blob/master/readmeimg/9.png" width="33%">
