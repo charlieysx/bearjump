@@ -48,10 +48,6 @@ npm run dev
 
 ### 游戏截图
 
-<img src="https://jetlua.github.io/colloc/snapshot.1.png" width="33.33%">
-<img src="https://jetlua.github.io/colloc/snapshot.2.png" width="33.33%">
-<img src="https://jetlua.github.io/colloc/snapshot.3.png" width="33.33%">
+<img src="https://github.com/CB-ysx/bearjump/readmeimg/1.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/2.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/3.png" width="33.33%">
 
-<img src="https://jetlua.github.io/colloc/snapshot.4.png" width="33.33%">
-<img src="https://jetlua.github.io/colloc/snapshot.5.png" width="33.33%">
-<img src="https://jetlua.github.io/colloc/snapshot.6.png" width="33.33%">
+<img src="https://github.com/CB-ysx/bearjump/readmeimg/4.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/5.png" width="33.33%"><img src="https://github.com/CB-ysx/bearjump/readmeimg/6.png" width="33.33%">
