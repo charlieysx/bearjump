@@ -174,7 +174,25 @@ function showEndScore(score) {
             cacheCtx.font = 'normal 36px sans-serif';
             cacheCtx.textAlign = 'center';
             cacheCtx.textBaseline = 'top';
-            cacheCtx.fillText(item.nickname, avatarCenter, top + 200 + 30);
+            let calcText = item.nickname;
+            let text = calcText.split('');
+            let maxWidth = 220;
+            if (!cacheCtx.measureText) {
+                console.log('当前手机不支持计算文字宽度');
+            }
+            let width = cacheCtx.measureText(calcText).width;
+            if (maxWidth) {
+                while(width > maxWidth) {
+                    text.pop();
+                    calcText = text.join('');
+                    if (calcText === '') {
+                        break;
+                    }
+                    calcText += '...';
+                    width = cacheCtx.measureText(calcText).width;
+                }
+            }
+            cacheCtx.fillText(calcText, avatarCenter, top + 200 + 30);
             
             cacheCtx.fillStyle = '#000000';
             cacheCtx.font = 'normal 48px sans-serif';

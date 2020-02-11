@@ -8,7 +8,7 @@
     "ios >= 8"
   ],
   "scripts": {
-    "dev": "webpack -w",
+    "dev": "webpack --watch --progress --color",
     "build": "cross-env NODE_ENV=production webpack"
   },
   "author": "CodeBear",
